@@ -1,0 +1,54 @@
+resources:
+  jobs:
+    scd2_real_time_job:
+      name: SCD2 Real-Time Data Processing - ${var.environment}
+      description: "Job to process SCD Type 2 real-time data updates"
+
+      tasks:
+        - task_key: scd2_processing
+
+          notebook_task:
+            notebook_path: ../source/SCD2_Real_Time_Data.ipynb
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              environment: ${var.environment}
+
+          environment_key: default
+
+          timeout_seconds: 3600
+          max_retries: 2
+          min_retry_interval_millis: 60000
+          retry_on_timeout: true
+
+      environments:
+        - environment_key: default
+          spec:
+            client: "2"
+
+      email_notifications:
+        on_start: []
+        on_success: []
+        on_failure: []
+
+      max_concurrent_runs: 1
+      timeout_seconds: 7200
+
+      # Schedule: Run daily at 8:00 AM UTC
+      schedule:
+        quartz_cron_expression: "0 0 8 * * ?"
+        timezone_id: "GMT"
+        pause_status: UNPAUSED
+
+      tags:
+        environment: ${var.environment}
+        project: databricks_pipeline
+        process_type: scd2
+
+      # permissions:
+      #   - level: CAN_MANAGE
+      #     group_name: data-engineers
+
+      #   - level: CAN_VIEW
+      #     group_name: data-analysts
